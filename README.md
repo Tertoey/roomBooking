@@ -1,3 +1,17 @@
+step
+npx create-next-app@latest . --typescript --tailwind --eslint
+√ Would you like to use `src/` directory? ... No / Yes
+√ Would you like to use App Router? (recommended) ... No / Yes
+√ Would you like to customize the default import alias (@/*)? ... No / Yes
+√ What import alias would you like configured? ... @/*
+
+npx shadcn-ui@latest init
+Ok to proceed? (y) y
+√ Which style would you like to use? » Default
+√ Which color would you like to use as base color? » Slate
+√ Would you like to use CSS variables for colors? ... no / yes
+
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
