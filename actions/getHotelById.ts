@@ -11,6 +11,7 @@ export const getHotelById = async(hotelId:string)=>{
             }
         })
         if(!hotel) return null;
+        return hotel
     }catch(error:any){
         throw new Error(error)
     }

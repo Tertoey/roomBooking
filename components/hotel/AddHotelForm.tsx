@@ -6,19 +6,23 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage,Form } from "../ui/form";
 import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from "@/components/ui/select"
+import {Alert,AlertDescription,AlertTitle,} from "@/components/ui/alert"
+import {Dialog,DialogContent,DialogDescription,DialogHeader,DialogTitle,DialogTrigger,} from "@/components/ui/dialog"
   
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Checkbox } from "../ui/checkbox";
 import { UploadButton } from "../uploadthing";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { useToast } from "../ui/use-toast";
 import Image from "next/image";
 import { Button } from "../ui/button";
-import { Loader2, XCircle } from "lucide-react";
+import { Eye, Loader2, Pencil, PencilLine, Plus, Terminal, Trash, XCircle } from "lucide-react";
 import axios from 'axios'
 import useLocation from "@/hooks/useLacation";
 import { ICity, IState } from "country-state-city";
+import { useRouter } from "next/navigation";
+import AddRoomForm from "../room/AddRoomForm";
 
 interface AddHotelFormProps{
     hotel: HotelWithRooms | null;
@@ -62,14 +66,17 @@ const AddHotelForm = ({hotel}:AddHotelFormProps) => {
     const [state,setState] = useState<IState[]>([])
     const [city,setCity] = useState<ICity[]>([])
     const [isLoading,setIsLoading] = useState(false)
+    const [isHotelDeleting, setisHotelDeleting] = useState (false)
+    const [open, setOpen]= useState(false)
 
     const {toast} = useToast()
+    const router = useRouter()
     const {getAllCountries,getCountryState,getStateCities} = useLocation()
     const country = getAllCountries()
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
+        defaultValues: hotel ||{
             title:"",
             description:"",
             image:"",
@@ -91,6 +98,16 @@ const AddHotelForm = ({hotel}:AddHotelFormProps) => {
       })
 
       useEffect(()=>{
+        if(typeof image === 'string'){
+            form.setValue('image',image,{
+                shouldValidate:true,
+                shouldDirty:true,
+                shouldTouch:true,
+            })
+        }
+      },[image])
+
+      useEffect(()=>{
         const seletedCountry = form.watch("country")
         const countryState = getCountryState(seletedCountry)
         if(countryState){
@@ -108,8 +125,67 @@ const AddHotelForm = ({hotel}:AddHotelFormProps) => {
       },[form.watch("country"),form.watch("state")],)
       
       function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values)
+        setIsLoading(true)
+        if(hotel){
+            //update
+            axios.patch(`/api/hotel/${hotel.id}`,values).then((res)=>{
+                toast({
+                    variant:'success',
+                    description:'Hotel Update'
+                })
+                router.push(`/hotel/${res.data.id}`)
+                setIsLoading(false)
+            }).catch((err)=>{
+                console.log(err)
+                toast({
+                    variant:'destructive',
+                    description:'Something went wrong'
+                })
+                setIsLoading(false)
+            })
+        }else{
+            //create
+            axios.post('/api/hotel',values).then(res =>{
+                toast({
+                    variant:'success',
+                    description:'Hotel Created'
+                })
+                router.push(`/hotel/${res.data.id}`)
+                setIsLoading(false)
+            }).catch((err)=>{
+                console.log(err)
+                toast({
+                    variant:'destructive',
+                    description:'Something went wrong'
+                })
+                setIsLoading(false)
+            })
+        }
       }
+
+      const handleDeleteHotel = async(hotel:HotelWithRooms)=>{
+        setisHotelDeleting(true)
+        const getImageKey = (src:string)=>src.substring(src.lastIndexOf('/')+1)
+        try{
+            const imageKey = getImageKey(hotel.image)
+            await axios.post('/api/uploadthing/delete',{imageKey})
+            await axios.delete(`/api/hotel/${hotel.id}`)
+            setisHotelDeleting(false)
+            toast({
+                variant:'success',
+                description:'Hotel deleted'
+            })
+            router.push(`/hotel/new`)
+        }catch(error:any){
+            setisHotelDeleting(false)
+            console.log(error)
+            toast({
+                variant:'destructive',
+                description:`Hotel Cannot delete: ${error.message}`
+            })
+        }
+      }
+
       const handleImageDelete = (image:string)=>{
         setImageIsDelete(true)
         const imageKey = image.substring(image.lastIndexOf('/')+1)
@@ -123,8 +199,8 @@ const AddHotelForm = ({hotel}:AddHotelFormProps) => {
             }
         }).catch(()=>{
             toast({
-                variant:'success',
-                description:'Image removed'
+                variant:'destructive',
+                description:'Something went wrong'
             })
         }).finally(()=>{
             setImageIsDelete(false)
@@ -437,6 +513,62 @@ const AddHotelForm = ({hotel}:AddHotelFormProps) => {
                                     </FormItem>
                                 )}
                             />
+                            {hotel && !hotel.room?.length &&
+                                <Alert className="bg-red-400">
+                                <Terminal className="h-4 w-4" />
+                                <AlertTitle>One Last step</AlertTitle>
+                                <AlertDescription>
+                                Your hotel was created successfully
+                                <div>Please add some room to complete your hotel setup</div>
+                                </AlertDescription>
+                            </Alert>
+                            }
+                            <div className="flex justify-between gap-2 flex-wrap">
+                                {/* delete hotel */}
+                                {hotel && 
+                                <Button onClick={()=> handleDeleteHotel(hotel)} variant='ghost' type="button" className="max-w-[150px]" disabled={isHotelDeleting || isLoading}>
+                                    {isHotelDeleting? <><Loader2 className="mr-2 h-4 w-4"/>Deleting</>
+                                        :<><Trash className="mr-2 h-4 w-4"/>Delete</>}
+                                </Button>}
+
+                                {/* View room */}
+                                {hotel && 
+                                <Button onClick={()=> router.push(`/hotel-details/${hotel.id}`)} 
+                                variant='outline' type="button"><Eye className="mr-2 h-4 w-4"/>View</Button>}
+
+                                {/* Add room */}
+                                {hotel &&
+                                <div>
+                                    <Dialog open={open} onOpenChange={setOpen}>
+                                    <DialogTrigger>
+                                        <Button  type="button" variant='outline' className="max-w-[150px]">
+                                            <Plus className="mr-2 h-4 w-4"/>Add room
+                                        </Button>
+                                    </DialogTrigger>
+                                        <DialogContent className="max-w-[900px] w-[90%]">
+                                            <DialogHeader className="px-2">
+                                                <DialogTitle>Add a Room</DialogTitle>
+                                                <DialogDescription>
+                                                    Add details about a room in your hotel
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <AddRoomForm/>
+                                        </DialogContent>
+                                    </Dialog>
+                                    </div>
+                                }
+
+                                {/* Update or create hotel */}
+                                {hotel ? 
+                                    <Button className="max-w-[150px]" disabled={isLoading}>
+                                        {isLoading? <><Loader2 className="mr-2 h-4 w-4"/>Updating</>:
+                                            <><PencilLine className="mr-2 h-4 w-4"/>Update</>}
+                                    </Button>
+                                    :<Button className="max-w-[150px]" disabled={isLoading}>
+                                        {isLoading? <><Loader2 className="mr-2 h-4 w-4"/>Creating</>:
+                                            <><Pencil className="mr-2 h-4 w-4"/>Create Hotel</>}
+                                    </Button>}
+                            </div>
                         </div>
                     </div>
                 </form>
