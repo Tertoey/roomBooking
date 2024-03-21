@@ -206,6 +206,11 @@ const AddHotelForm = ({hotel}:AddHotelFormProps) => {
             setImageIsDelete(false)
         })
       }
+
+    const handleDailogueOpen = ()=>{
+        setOpen(prev=>!prev)
+    }
+
     return ( 
         <div>
             <Form {...form}>
@@ -248,7 +253,7 @@ const AddHotelForm = ({hotel}:AddHotelFormProps) => {
                             <div>
                                 <FormLabel>Choose Amerities</FormLabel>
                                 <FormDescription> Choose Amanities popular in your hotel</FormDescription>
-                                    <div className="grid grid-cols-4 gap-4 mt-2">
+                                    <div className="grid grid-cols-2 gap-4 mt-2 md:grid-cols-4">
                                         <FormField
                                             control={form.control}
                                             name="gym"
@@ -538,24 +543,22 @@ const AddHotelForm = ({hotel}:AddHotelFormProps) => {
 
                                 {/* Add room */}
                                 {hotel &&
-                                <div>
                                     <Dialog open={open} onOpenChange={setOpen}>
-                                    <DialogTrigger>
-                                        <Button  type="button" variant='outline' className="max-w-[150px]">
+                                        <Button  type="button" variant='outline' className="max-w-[150px] " asChild>
+                                            <DialogTrigger>
                                             <Plus className="mr-2 h-4 w-4"/>Add room
+                                            </DialogTrigger>
                                         </Button>
-                                    </DialogTrigger>
-                                        <DialogContent className="max-w-[900px] w-[90%]">
+                                        <DialogContent className="max-w-[900px] w-[90%]  ">
                                             <DialogHeader className="px-2">
                                                 <DialogTitle>Add a Room</DialogTitle>
                                                 <DialogDescription>
                                                     Add details about a room in your hotel
                                                 </DialogDescription>
                                             </DialogHeader>
-                                            <AddRoomForm/>
+                                            <AddRoomForm hotel={hotel} handleDailogueOpen={handleDailogueOpen}/>
                                         </DialogContent>
                                     </Dialog>
-                                    </div>
                                 }
 
                                 {/* Update or create hotel */}
