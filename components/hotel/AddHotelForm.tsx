@@ -23,13 +23,15 @@ import useLocation from "@/hooks/useLacation";
 import { ICity, IState } from "country-state-city";
 import { useRouter } from "next/navigation";
 import AddRoomForm from "../room/AddRoomForm";
+import RoomCard from "../room/RoomCard";
+import { Separator } from "../ui/separator";
 
 interface AddHotelFormProps{
     hotel: HotelWithRooms | null;
 }
 
 export type HotelWithRooms = Hotel & {
-    room: Room[]
+    rooms: Room[]
 }
 const formSchema = z.object({
     title: z.string().min(3,{
@@ -518,7 +520,7 @@ const AddHotelForm = ({hotel}:AddHotelFormProps) => {
                                     </FormItem>
                                 )}
                             />
-                            {hotel && !hotel.room?.length &&
+                            {hotel && !hotel.rooms?.length &&
                                 <Alert className="bg-red-400">
                                 <Terminal className="h-4 w-4" />
                                 <AlertTitle>One Last step</AlertTitle>
@@ -572,6 +574,18 @@ const AddHotelForm = ({hotel}:AddHotelFormProps) => {
                                             <><Pencil className="mr-2 h-4 w-4"/>Create Hotel</>}
                                     </Button>}
                             </div>
+                            {hotel && !!hotel.rooms?.length &&
+                                <div>
+                                    <Separator/>
+                                    <h3 className=" text-lg font-semibold my-4">Hotel Rooms</h3>
+                                    <div className="grid grid-cols-1 2xl:grid-cols-2 gap-6">
+                                        {hotel.rooms?.map(room=>{
+                                            return <RoomCard key={room.id} hotel={hotel} room={room}/>
+                                        })}
+                                    </div>
+                                </div>
+                            }
+
                         </div>
                     </div>
                 </form>

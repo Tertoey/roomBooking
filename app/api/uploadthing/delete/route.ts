@@ -10,8 +10,10 @@ export async function POST(req:Request) {
         return new NextResponse ("Unauthorized",{status:401})
     }
     const {imageKey} = await req.json()
+    console.log(imageKey)
     try{
         const res = await utapi.deleteFiles(imageKey)
+        console.log(res,"Ok")
         return NextResponse.json(res)
     }catch(error){
         console.log("error at uploathing/delete",error)

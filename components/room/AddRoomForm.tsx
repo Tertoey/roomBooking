@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 
 interface AddRoomFormProps{
     hotel?: Hotel & {
-        room: Room[]
+        rooms: Room[]
     }
     room?: Room
     // close dialogue when submit
@@ -203,7 +203,7 @@ const AddRoomForm = ({hotel, room, handleDailogueOpen}:AddRoomFormProps) => {
                                 control={form.control}
                                 name="roomService"
                                 render={({ field }) => (
-                                    <FormItem className="flex flex-row items-end space-x-3 rounded-md">
+                                    <FormItem className="flex flex-row items-end space-x-3 rounded-md border p-2">
                                         <FormControl>
                                             <Checkbox checked={field.value}
                                             onCheckedChange={field.onChange}/>
