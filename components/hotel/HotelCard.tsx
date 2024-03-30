@@ -8,6 +8,7 @@ import AmenityItem from "../AmenityItem";
 import { Dumbbell, MapPin, Waves } from "lucide-react";
 import useLocation from "@/hooks/useLacation";
 import { Button } from "../ui/button";
+import { FaSwimmer } from "react-icons/fa";
 
 const HotelCard = ({hotel}:{hotel:HotelWithRooms}) => {
     const pathname = usePathname()
@@ -28,7 +29,7 @@ const HotelCard = ({hotel}:{hotel:HotelWithRooms}) => {
                         <AmenityItem>
                             <MapPin className="w-4 h-4"/> {country?.name} {hotel.city}
                         </AmenityItem>
-                        {hotel.swimmingPool && <AmenityItem><Waves className="h-4 w-4"/>Pool</AmenityItem>}
+                        {hotel.swimmingPool && <AmenityItem><FaSwimmer size={18}/>Pool</AmenityItem>}
                         {hotel.gym && <AmenityItem><Dumbbell className="h-4 w-4"/>Gym</AmenityItem>}
                     </div>
                     <div className="flex items-center justify-between">
