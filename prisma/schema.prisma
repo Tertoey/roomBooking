@@ -75,6 +75,7 @@ model Room{
 model Bookings{
   id String @id @default(uuid())
   userName String
+  userEmail String
   userId String
   hotelId String
   roomId String?
